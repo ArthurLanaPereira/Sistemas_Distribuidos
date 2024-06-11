@@ -5,6 +5,9 @@ import com.google.gson.JsonObject;
 import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -19,9 +22,6 @@ public class Server extends Thread{
 		private ServerSocket serverSocket;
 		private Socket clientSocket;
 	    private BufferedWriter fileWriter;
-	    private static final String DATABASE_FILE = "usuario_database.txt";
-	    private static final String COMPANY_DATABASE_FILE = "empresa_database.txt";
-
 	    public Server(Socket clientSoc, BufferedWriter writer) {
 	        clientSocket = clientSoc;
 	        fileWriter = writer;
@@ -48,128 +48,6 @@ public class Server extends Thread{
 	            DecodedJWT jwt = verifier.verify(token);
 	            return jwt.getClaim("role").asString();
 	        }
-	    }
-
-	    private static class User {
-	        private String email;
-	        private String password;
-	        private String name;
-	        private int id;
-
-	    	public User(String email, String password, String name, int id) {
-	            this.email = email;
-	            this.password = password;
-	            this.name = name;
-	            this.id = id;
-	        }
-	        
-
-	        public String getEmail() {
-	            return email;
-	        }
-
-	        public void setEmail(String email) {
-	            this.email = email;
-	        }
-
-	        public String getPassword() {
-	            return password;
-	        }
-
-	        public void setPassword(String password) {
-	            this.password = password;
-	        }
-
-	        public String getName() {
-	            return name;
-	        }
-
-	        public void setName(String name) {
-	            this.name = name;
-	        }
-	        
-	        public int getId() {
-				return id;
-			}
-
-
-			public void setId(int id) {
-				this.id = id;
-			}
-	        
-	    }
-
-	    
-	    private static class Company {
-	        private String email;
-	        private String password;
-	        private String name;
-	        private String industry;
-			private String description;
-	        private int id;
-
-	    	public Company(String email, String password, String name, String industry, String description, int id) {
-	            this.email = email;
-	            this.password = password;
-	            this.name = name;
-	            this.industry = industry;
-	            this.description = description;
-	            this.id = id;
-	        }
-	        
-
-	        public String getEmail() {
-	            return email;
-	        }
-
-	        public void setEmail(String email) {
-	            this.email = email;
-	        }
-
-	        public String getPassword() {
-	            return password;
-	        }
-
-	        public void setPassword(String password) {
-	            this.password = password;
-	        }
-
-	        public String getName() {
-	            return name;
-	        }
-
-	        public void setName(String name) {
-	            this.name = name;
-	        }
-	        
-	        public String getIndustry() {
-				return industry;
-			}
-
-
-			public void setIndustry(String industry) {
-				this.industry = industry;
-			}
-
-
-			public String getDescription() {
-				return description;
-			}
-
-
-			public void setDescription(String description) {
-				this.description = description;
-			}
-	        
-	        public int getId() {
-				return id;
-			}
-
-
-			public void setId(int id) {
-				this.id = id;
-			}
-	        
 	    }
 
 	    @Override
@@ -246,7 +124,7 @@ public class Server extends Thread{
 	                }
 	            }
 	            
-	        } catch (IOException e) {
+	        } catch (IOException | SQLException e) {
 	            System.err.println("Erro no servidor: " + e.getMessage());
 	        } finally {
 	            try {
@@ -262,39 +140,37 @@ public class Server extends Thread{
 
 	    // Usuário
 	    
-	    private void handleLogin(JsonObject requestJson, PrintWriter out) throws IOException {
+	    private void handleLogin(JsonObject requestJson, PrintWriter out) throws IOException, SQLException {
 	        JsonObject data = requestJson.getAsJsonObject("data");
 	        String email = data.get("email").getAsString();
 	        String password = data.get("password").getAsString();
 
-	        /*if(data.get("email").getAsString().equals("") || data.get("password").getAsString().equals("")) {
+	        if(data.get("email").getAsString().equals("") || data.get("password").getAsString().equals("")) {
 	        	
 	        	JsonObject responseJson = Utils.createResponse("LOGIN_CANDIDATE", "INVALID_LOGIN", "");
                 out.println(Utils.toJsonString(responseJson));
                 return;
-	        }*/
-	        
-	        List<User> users = readUserDatabase();
-	        for (User user : users) {
-	            if (user.getEmail().equals(email)) {
-	                if (user.getPassword().equals(password)) {
-	                	
-	                    String token = JWTValidator.generateToken(user.getId(), "CANDIDATE");
-	                    JsonObject responseJson = Utils.createResponse("LOGIN_CANDIDATE", "SUCCESS", token);
-	                    out.println(Utils.toJsonString(responseJson));
-	                    return;
-	                } else {
-	                    
-	                	JsonObject responseData = new JsonObject();
-	                    JsonObject responseJson = Utils.createResponse("LOGIN_CANDIDATE", "INVALID_LOGIN", "");
-	                    responseJson.remove("data"); 
-	                    responseJson.add("data", responseData);
-	                    out.println(Utils.toJsonString(responseJson));
-	                    return;
-	                }
-	            }
 	        }
 	        
+	        PreparedStatement st;
+	        st = ConnectionBD.conectaBD().prepareStatement("SELECT * FROM candidate WHERE email = ? AND password = ?");
+	        st.setString(1, email);
+	        st.setString(2, password);
+
+	        ResultSet rs;
+	        rs = st.executeQuery();
+
+
+	        if (rs.next()) {
+	            int idcandidate = Integer.parseInt(rs.getString("idcandidate"));
+	            String token = JWTValidator.generateToken(idcandidate, "CANDIDATE");
+	            JsonObject responseJson = Utils.createResponse("LOGIN_CANDIDATE", "SUCCESS", token);
+	            System.out.println(Utils.toJsonString(responseJson));
+	            out.println(Utils.toJsonString(responseJson));
+	            return;
+
+	        }
+
 	        JsonObject responseData = new JsonObject();
 	        JsonObject responseJson = Utils.createResponse("LOGIN_CANDIDATE", "INVALID_LOGIN", "");
 	        responseJson.remove("data"); 
@@ -302,41 +178,41 @@ public class Server extends Thread{
 	        out.println(Utils.toJsonString(responseJson));
 	    }
 
-	    private void handleSignup(JsonObject requestJson, PrintWriter out) throws IOException {
+	    private void handleSignup(JsonObject requestJson, PrintWriter out) throws IOException, SQLException {
 	        JsonObject data = requestJson.getAsJsonObject("data");
 	        String email = data.get("email").getAsString();
 	        String password = data.get("password").getAsString();
 	        String name = data.get("name").getAsString();
-	        int id;
+	        PreparedStatement st;
+	        ResultSet rs;
 
 	        if(data.get("email").getAsString().equals("") || data.get("password").getAsString().equals("") || data.get("name").getAsString().equals("")) {
 	        	
-	        	JsonObject responseJson = Utils.createResponse("SIGNUP_CANDIDATE", "USER_EXISTS", "");
+	        	JsonObject responseJson = Utils.createResponse("SIGNUP_CANDIDATE", "INVALID_FIELD", "");
                 out.println(Utils.toJsonString(responseJson));
                 return;
 	        }
 	        
-	        	List<User> users = readUserDatabase();
-		        if(users.size() == 0) {
-		        	id = 1;
-		        }
-		        else {
-		        	User lastCreated = users.get(users.size()-1);
-		        	id = lastCreated.getId() + 1;
-		        }
-		        for (User user : users) {
-		            if (user.getEmail().equals(email)) {
-		                
-		                JsonObject responseJson = Utils.createResponse("SIGNUP_CANDIDATE", "USER_EXISTS", "");
-		                out.println(Utils.toJsonString(responseJson));
-		                return;
-		            }
-		        }
+	        st = ConnectionBD.conectaBD().prepareStatement("SELECT * FROM candidate WHERE email = ?");
+            st.setString(1, email);
 
-		        User newUser = new User(email, password, name, id);
-		        users.add(newUser);
-		        writeUserDatabase(users);
+            rs = st.executeQuery();
 
+            if (rs.next()) {
+                JsonObject Response = Utils.createResponse("SIGNUP_CANDIDATE", "USER_EXISTS", "");
+
+                out.println(Utils.toJsonString(Response));
+                return;
+            }
+            else {
+
+                st = ConnectionBD.conectaBD().prepareStatement("INSERT INTO candidate (email, name, password) VALUES (?, ?, ?)");
+                st.setString(1, email);
+                st.setString(2, name);
+                st.setString(3, password);
+                st.executeUpdate();
+
+            }
 		        JsonObject responseData = new JsonObject();
 		        JsonObject responseJson = Utils.createResponse("SIGNUP_CANDIDATE", "SUCCESS", "");
 		        responseJson.remove("data"); 
@@ -344,8 +220,35 @@ public class Server extends Thread{
 		        out.println(Utils.toJsonString(responseJson));
 	        }
 	    
-	    private void handleLookup(JsonObject requestJson, PrintWriter out) throws IOException{
-	        if (requestJson != null && requestJson.has("token")) {
+	    private void handleLookup(JsonObject requestJson, PrintWriter out) throws IOException, SQLException{
+	        
+	    	String token = requestJson.get("token").getAsString();
+	        int idcandidate = JWTValidator.getIdClaim(token);
+	        
+	        PreparedStatement st;
+	        st = ConnectionBD.conectaBD().prepareStatement("SELECT * FROM candidate WHERE idcandidate = ?");
+	        st.setInt(1, idcandidate);
+
+	        ResultSet rs;
+	        rs = st.executeQuery();
+
+	        if (rs.next()) {
+	            String email = rs.getString("email");
+	            String password = rs.getString("password");
+	            String name = rs.getString("name");
+	            JsonObject data = new JsonObject();
+	            data.addProperty("email",email);
+	            data.addProperty("password",password);
+	            data.addProperty("name",name);
+
+	            JsonObject responseJson = Utils.createResponse("LOOKUP_ACCOUNT_CANDIDATE", "SUCCESS", "");
+	            responseJson.add("data",data);
+	            out.println(Utils.toJsonString(responseJson));
+	            return;
+
+	        }
+	    	
+	    	/*if (requestJson != null && requestJson.has("token")) {
 	            String token = requestJson.get("token").getAsString();
 	            
 	            int userId = JWTValidator.getIdClaim(token);
@@ -367,21 +270,58 @@ public class Server extends Thread{
 	                out.println(Utils.toJsonString(responseJson));
 	                out.flush();
 	            }
-	        }
+	        }*/
 	    }
 	    
-	    private void handleUpdate(JsonObject requestJson, PrintWriter out) throws IOException {
+	    private void handleUpdate(JsonObject requestJson, PrintWriter out) throws IOException, SQLException {
 	        JsonObject data = requestJson.getAsJsonObject("data");
-	        String token = requestJson.get("token").getAsString(); 
-
-	        int userId = JWTValidator.getIdClaim(token);
-	        List<User> users = readUserDatabase();
 	        
-	        Optional<User> optionalUser = users.stream()
+	        if ((data.get("email").getAsString() == null || data.get("email").getAsString().isEmpty() ) || (data.get("password").getAsString() == null || data.get("password").getAsString().isEmpty()) || (data.get("name").getAsString() == null || data.get("name").getAsString().isEmpty())) {
+	            JsonObject responseJson = Utils.createResponse("UPDATE_ACCOUNT_CANDIDATE", "INVALID_FIELD", "");
+	            out.println(Utils.toJsonString(responseJson));
+	            return;
+	        }
+	        
+	        String token = requestJson.get("token").getAsString();
+	        String email = data.get("email").getAsString();
+	        String password = data.get("password").getAsString();
+	        String name = data.get("name").getAsString();
+
+	        PreparedStatement st;
+	        st = ConnectionBD.conectaBD().prepareStatement("SELECT * FROM candidate WHERE email = ?");
+	        st.setString(1, email);
+
+	        ResultSet rs;
+	        rs = st.executeQuery();
+
+	        if (rs.next()) {
+	            JsonObject Response = Utils.createResponse("UPDATE_ACCOUNT_CANDIDATE", "INVALID_EMAIL", "");
+
+	            out.println(Utils.toJsonString(Response));
+	            return;
+	        }
+
+	        int idcandidate = JWTValidator.getIdClaim(token);
+	        
+	        st = ConnectionBD.conectaBD().prepareStatement("UPDATE candidate SET email = ?, name = ?, password = ? WHERE idcandidate = ?");
+            st.setString(1, email);
+            st.setString(2, name);
+            st.setString(3, password);
+            st.setInt(4, idcandidate);
+            st.executeUpdate();
+
+            JsonObject responseJson = Utils.createResponse("UPDATE_ACCOUNT_CANDIDATE", "SUCCESS", "");
+            out.println(Utils.toJsonString(responseJson));
+	    }
+	    
+
+	        /*List<User> users = readUserDatabase();
+	        
+	       Optional<User> optionalUser = users.stream()
 	                                           .filter(user -> user.getId() == userId)
-	                                           .findFirst();
+	                                          .findFirst();
 	        if (optionalUser.isPresent()) {
-	            User user = optionalUser.get();
+	           User user = optionalUser.get();
 	            boolean anyFieldUpdated = false;
 
 	            if (data.has("email")) {
@@ -421,16 +361,23 @@ public class Server extends Thread{
 	            out.println(Utils.toJsonString(responseJson));
 
 	            return;
-	        }
+	        }*/
 
-	        JsonObject responseJson = Utils.createResponse("UPDATE_ACCOUNT_CANDIDATE", "INVALID_EMAIL", new JsonObject());
-	        out.println(Utils.toJsonString(responseJson));
-	    }
-	    
-	    private void handleDelete(JsonObject requestJson, PrintWriter out) throws IOException {
-	        JsonObject data = requestJson.getAsJsonObject("data");
+	        
+	    private void handleDelete(JsonObject requestJson, PrintWriter out) throws IOException, SQLException {
+	        //JsonObject data = requestJson.getAsJsonObject("data");
 	        String token = requestJson.get("token").getAsString();
-	        try {
+	        int idcandidate = JWTValidator.getIdClaim(token);
+	        
+	        PreparedStatement st;
+	        st = ConnectionBD.conectaBD().prepareStatement("DELETE FROM candidate WHERE idcandidate = ?");
+	        st.setInt(1, idcandidate);
+	        st.executeUpdate();
+
+	        JsonObject responseJson = Utils.createResponse("DELETE_ACCOUNT_CANDIDATE", "SUCCESS", "");
+	        out.println(Utils.toJsonString(responseJson));
+	        
+	        /*try {
 	            int userId = JWTValidator.getIdClaim(token);
 	            List<User> users = readUserDatabase();
 	            if (!users.stream().anyMatch(user -> user.getId() == userId)) {
@@ -460,12 +407,12 @@ public class Server extends Thread{
 	            return;
 	        }
 	        JsonObject responseJson = Utils.createResponse("DELETE_ACCOUNT_CANDIDATE", "USER_NOT_FOUND", "");
-	        out.println(Utils.toJsonString(responseJson));
+	        out.println(Utils.toJsonString(responseJson));*/
 	    }
 	  
 	    public void handleLogout(JsonObject requestJson, PrintWriter out) throws IOException {
 	    	
-	    	String token = requestJson.get("token").getAsString();
+	    	String token = requestJson.get("token").getAsString();	
 	    	JsonObject accountData = new JsonObject();
 	        JsonObject responseJson = Utils.createResponse("LOGOUT_CANDIDATE", "SUCCESS", new JsonObject()); 
 	        responseJson.add("data", accountData);
@@ -474,43 +421,18 @@ public class Server extends Thread{
 	        out.flush();
 	    }
 	    
-	    // Criação BD Usuário
-	    
-	    private List<User> readUserDatabase() throws IOException {
-	        List<User> users = new ArrayList<>();
-	        try (BufferedReader br = new BufferedReader(new FileReader(DATABASE_FILE))) {
-	            String line;
-	            while ((line = br.readLine()) != null) {
-	                String[] parts = line.split(",");
-	                User user = new User(parts[0], parts[1], parts[2], Integer.parseInt(parts[3]));
-	                users.add(user);
-	            }
-	        } catch (FileNotFoundException e) {
-	        	
-	        }
-	        return users;
-	    }
-
-	    private void writeUserDatabase(List<User> users) throws IOException {
-	        try (BufferedWriter bw = new BufferedWriter(new FileWriter(DATABASE_FILE))) {
-	            for (User user : users) {
-	                String userString = user.getEmail() + "," + user.getPassword() + "," + user.getName() + "," + user.getId();
-	                bw.write(userString);
-	                bw.newLine();
-	            }
-	        }
-	    }
-	    
 	    //Empresa
 	    
-	    private void handleSignupCompany(JsonObject requestJson, PrintWriter out) throws IOException {
+	    private void handleSignupCompany(JsonObject requestJson, PrintWriter out) throws IOException, SQLException {
 	        JsonObject data = requestJson.getAsJsonObject("data");
 	        String email = data.get("email").getAsString();
 	        String password = data.get("password").getAsString();
 	        String name = data.get("name").getAsString();
 	        String industry = data.get("industry").getAsString();
 	        String description = data.get("description").getAsString();
-	        int id;
+	        PreparedStatement st;
+	        ResultSet rs;
+	        //int id;
 
 	        if(data.get("email").getAsString().equals("") || data.get("password").getAsString().equals("") || data.get("name").getAsString().equals("") || data.get("industry").getAsString().equals("") || data.get("description").getAsString().equals("")) {
 	        	JsonObject responseData = new JsonObject();
@@ -521,7 +443,7 @@ public class Server extends Thread{
                 return;
 	        }
 	        
-	        List<Company> companys = readCompanyDatabase();
+	       /* List<Company> companys = readCompanyDatabase();
 	        if(companys.size() == 0) {
 	        	id = 1;
 	        }
@@ -541,7 +463,29 @@ public class Server extends Thread{
 
 	        Company newUser = new Company(email, password, name, industry, description, id);
 	        companys.add(newUser);
-	        writeCompanyDatabase(companys);
+	        writeCompanyDatabase(companys);*/
+	        st = ConnectionBD.conectaBD().prepareStatement("SELECT * FROM recruiter WHERE email = ?");
+            st.setString(1, email);
+
+            rs = st.executeQuery();
+
+            if (rs.next()) {
+                JsonObject Response = Utils.createResponse("SIGNUP_RECRUITER", "USER_EXISTS", "");
+
+                out.println(Utils.toJsonString(Response));;
+                return;
+            }
+            else {
+
+                st = ConnectionBD.conectaBD().prepareStatement("INSERT INTO recruiter (email, name, password, industry, description) VALUES (?, ?, ?, ?, ?)");
+                st.setString(1, email);
+                st.setString(2, name);
+                st.setString(3, password);
+                st.setString(4, industry);
+                st.setString(5, description);
+                st.executeUpdate();
+
+            }
 
 	        JsonObject responseData = new JsonObject();
 	        JsonObject responseJson = Utils.createResponse("SIGNUP_RECRUITER", "SUCCESS", "");
@@ -550,7 +494,7 @@ public class Server extends Thread{
 	        out.println(Utils.toJsonString(responseJson));
 	    }
 	    
-	    private void handleLoginCompany(JsonObject requestJson, PrintWriter out) throws IOException {
+	    private void handleLoginCompany(JsonObject requestJson, PrintWriter out) throws IOException, SQLException {
 	        JsonObject data = requestJson.getAsJsonObject("data");
 	        String email = data.get("email").getAsString();
 	        String password = data.get("password").getAsString();
@@ -565,7 +509,7 @@ public class Server extends Thread{
             return;
         }
 
-	        List<Company> companys = readCompanyDatabase();
+	        /*List<Company> companys = readCompanyDatabase();
 	        for (Company company : companys) {
 	            if (company.getEmail().equals(email)) {
 	                if (company.getPassword().equals(password)) {
@@ -584,6 +528,24 @@ public class Server extends Thread{
 	                    return;
 	                }
 	            }
+	        }*/
+	        
+	        PreparedStatement st;
+	        st = ConnectionBD.conectaBD().prepareStatement("SELECT * FROM recruiter WHERE email = ? AND password = ?");
+	        st.setString(1, email);
+	        st.setString(2, password);
+
+	        ResultSet rs;
+	        rs = st.executeQuery();
+
+	        if (rs.next()) {
+	            int idrecruiter = Integer.parseInt(rs.getString("idrecruiter"));
+	            String token = JWTValidator.generateToken(idrecruiter, "RECRUITER");
+	            JsonObject responseJson = Utils.createResponse("LOGIN_RECRUITER", "SUCCESS", token);
+	            System.out.println(Utils.toJsonString(responseJson));
+	            out.println(Utils.toJsonString(responseJson));
+	            return;
+
 	        }
 	        
 	        JsonObject responseData = new JsonObject();
@@ -604,8 +566,40 @@ public class Server extends Thread{
 	        out.flush();
 	    }
 	    
-	    private void handleLookupCompany(JsonObject requestJson, PrintWriter out) throws IOException{
-	        if (requestJson != null && requestJson.has("token")) {
+	    private void handleLookupCompany(JsonObject requestJson, PrintWriter out) throws IOException, SQLException{
+	        
+	    	String token = requestJson.get("token").getAsString();
+	        int idrecruiter = JWTValidator.getIdClaim(token);
+	        PreparedStatement st;
+	        st = ConnectionBD.conectaBD().prepareStatement("SELECT * FROM recruiter WHERE idrecruiter = ?");
+	        st.setInt(1, idrecruiter);
+
+	        ResultSet rs;
+	        rs = st.executeQuery();
+
+
+	        if (rs.next()) {
+	            String email = rs.getString("email");
+	            String password = rs.getString("password");
+	            String name = rs.getString("name");
+	            String industry = rs.getString("industry");
+                String description = rs.getString("description");
+	            JsonObject data = new JsonObject();
+	            data.addProperty("email",email);
+	            data.addProperty("password",password);
+	            data.addProperty("name",name);
+	            data.addProperty("industry",industry);
+                data.addProperty("description",description);
+
+	            JsonObject responseJson = Utils.createResponse("LOOKUP_ACCOUNT_RECRUITER", "SUCCESS", "");
+	            responseJson.add("data",data);
+	            out.println(Utils.toJsonString(responseJson));
+	            return;
+
+	        }
+	    	
+	    	
+	    	/*if (requestJson != null && requestJson.has("token")) {
 	            String token = requestJson.get("token").getAsString();
 	            
 	            int companyId = JWTValidator.getIdClaim(token);
@@ -629,15 +623,55 @@ public class Server extends Thread{
 	                out.println(Utils.toJsonString(responseJson));
 	                out.flush();
 	            }
-	        }
+	        }*/
 	    }
 	    
-	    private void handleUpdateCompany(JsonObject requestJson, PrintWriter out) throws IOException {
+	    private void handleUpdateCompany(JsonObject requestJson, PrintWriter out) throws IOException, SQLException {
 	        JsonObject data = requestJson.getAsJsonObject("data");
-	        String token = requestJson.get("token").getAsString(); 
+	        
+	        if ((data.get("email").getAsString() == null || data.get("email").getAsString().isEmpty() ) || (data.get("password").getAsString() == null || data.get("password").getAsString().isEmpty()) || (data.get("name").getAsString() == null || data.get("name").getAsString().isEmpty()) || (data.get("industry").getAsString() == null || data.get("industry").getAsString().isEmpty()) || (data.get("description").getAsString() == null || data.get("description").getAsString().isEmpty())) {
+	            JsonObject responseJson = Utils.createResponse("UPDATE_ACCOUNT_RECRUITER", "INVALID_FIELD", "");
+	            out.println(Utils.toJsonString(responseJson));
+	            return;
+	        }
+	        
+	        String token = requestJson.get("token").getAsString();
+	        String email = data.get("email").getAsString();
+	        String password = data.get("password").getAsString();
+	        String name = data.get("name").getAsString();
+	        String industry = data.get("industry").getAsString();
+	        String description = data.get("description").getAsString();
 
-	        int companyId = JWTValidator.getIdClaim(token);
-	        List<Company> companys = readCompanyDatabase();
+	        PreparedStatement st;
+	        st = ConnectionBD.conectaBD().prepareStatement("SELECT * FROM recruiter WHERE email = ?");
+	        st.setString(1, email);
+
+	        ResultSet rs;
+	        rs = st.executeQuery();
+
+	        if (rs.next()) {
+	            JsonObject Response = Utils.createResponse("UPDATE_ACCOUNT_RECRUITER", "INVALID_EMAIL", "");
+
+	            out.println(Utils.toJsonString(Response));
+	            return;
+	        }
+
+	        int idrecruiter = JWTValidator.getIdClaim(token);
+	        
+	        st = ConnectionBD.conectaBD().prepareStatement("UPDATE recruiter SET email = ?, name = ?, password = ?, industry = ?, description = ? WHERE idrecruiter = ?");
+	        st.setString(1, email);
+	        st.setString(2, name);
+	        st.setString(3, password);
+	        st.setString(4, industry);
+	        st.setString(5, description);
+	        st.setInt(6, idrecruiter);
+	        st.executeUpdate();
+
+	        JsonObject responseJson = Utils.createResponse("UPDATE_ACCOUNT_RECRUITER", "SUCCESS", "");
+	        out.println(Utils.toJsonString(responseJson));
+	    }
+	        
+	      /*  List<Company> companys = readCompanyDatabase();
 	        
 	        Optional<Company> optionalCompany = companys.stream()
 	                                           .filter(company -> company.getId() == companyId)
@@ -703,11 +737,23 @@ public class Server extends Thread{
 
 	        JsonObject responseJson = Utils.createResponse("UPDATE_ACCOUNT_RECRUITER", "INVALID_EMAIL", new JsonObject());
 	        out.println(Utils.toJsonString(responseJson));
-	    }
+	    }*/
 	    
-	    private void handleDeleteCompany(JsonObject requestJson, PrintWriter out) throws IOException {
+	    private void handleDeleteCompany(JsonObject requestJson, PrintWriter out) throws IOException, SQLException {
 	        JsonObject data = requestJson.getAsJsonObject("data");
 	        String token = requestJson.get("token").getAsString();
+	        
+	        int idrecruiter = JWTValidator.getIdClaim(token);
+	        
+
+	        PreparedStatement st;
+	        st = ConnectionBD.conectaBD().prepareStatement("DELETE FROM recruiter WHERE idrecruiter = ?");
+	        st.setInt(1, idrecruiter);
+	        st.executeUpdate();
+
+	        JsonObject responseJson = Utils.createResponse("DELETE_ACCOUNT_RECRUITER", "SUCCESS", "");
+	        out.println(Utils.toJsonString(responseJson));
+	        /*
 	        try {
 	            int companyId = JWTValidator.getIdClaim(token);
 	            List<Company> companys = readCompanyDatabase();
@@ -738,36 +784,8 @@ public class Server extends Thread{
 	            return;
 	        }
 	        JsonObject responseJson = Utils.createResponse("DELETE_ACCOUNT_RECRUITER", "USER_NOT_FOUND", "");
-	        out.println(Utils.toJsonString(responseJson));
+	        out.println(Utils.toJsonString(responseJson));*/
 	    }
-	    
-	    //Criação BD Empresa 
-	    
-	    private List<Company> readCompanyDatabase() throws IOException {
-	        List<Company> companys = new ArrayList<>();
-	        try (BufferedReader br = new BufferedReader(new FileReader(COMPANY_DATABASE_FILE))) {
-	            String line;
-	            while ((line = br.readLine()) != null) {
-	                String[] parts = line.split(",");
-	                Company company = new Company(parts[0], parts[1], parts[2], parts[3], parts[4], Integer.parseInt(parts[5]));
-	                companys.add(company);
-	            }
-	        } catch (FileNotFoundException e) {
-	        	
-	        }
-	        return companys;
-	    }
-
-	    private void writeCompanyDatabase(List<Company> companys) throws IOException {
-	        try (BufferedWriter bw = new BufferedWriter(new FileWriter(COMPANY_DATABASE_FILE))) {
-	            for (Company company : companys) {
-	                String userString = company.getEmail() + "," + company.getPassword() + "," + company.getName() + "," + company.getIndustry() + "," + company.getDescription() + "," + company.getId();
-	                bw.write(userString);
-	                bw.newLine();
-	            }
-	        }
-	    }
-
 	 
 	    public static void main(String[] args) {
 	        int serverPort = 21234;
