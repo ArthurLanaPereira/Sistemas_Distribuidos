@@ -1,5 +1,6 @@
 package entrega2;
 
+import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 
 import java.io.*;
@@ -120,6 +121,50 @@ public class Server extends Thread{
 	                        case "LOOKUP_ACCOUNT_RECRUITER":
 	                        	handleLookupCompany(requestJson, out);
 	                            break;
+	                        
+	                        case "INCLUDE_SKILL":
+	                        	handleIncludeSkill(requestJson, out);
+	                            break;
+	                        
+	                        case "LOOKUP_SKILL":
+	                        	handleLookupSkill(requestJson, out);
+	                            break;
+	                           
+	                        case "LOOKUP_SKILLSET":
+	                        	handleLookupSkillSet(requestJson, out);
+	                            break;
+	                            
+	                        case "DELETE_SKILL":
+	                        	handleDeleteSkill(requestJson, out);
+	                            break;
+	                            
+	                        case "UPDATE_SKILL":
+	                        	handleUpdateSkill(requestJson, out);
+	                            break;
+	                            
+	                        case "SEARCH_JOB":
+	                        	handleSearchJob(requestJson, out);
+	                            break;
+	                            
+	                        case "INCLUDE_JOB":
+	                        	handleIncludeJob(requestJson, out);
+	                            break;
+	                            
+	                        case "LOOKUP_JOB":
+	                        	handleLookupJob(requestJson, out);
+	                            break;
+	                            
+	                        case "LOOKUP_JOBSET":
+	                        	handleLookupJobSet(requestJson, out);
+	                            break;
+	                            
+	                        case "DELETE_JOB":
+	                        	handleDeleteJob(requestJson, out);
+	                            break;
+	                            
+	                        case "UPDATE_JOB":
+	                        	handleUpdateJob(requestJson, out);
+	                            break;
 	                    }
 	                }
 	            }
@@ -148,7 +193,9 @@ public class Server extends Thread{
 	        if(data.get("email").getAsString().equals("") || data.get("password").getAsString().equals("")) {
 	        	
 	        	JsonObject responseJson = Utils.createResponse("LOGIN_CANDIDATE", "INVALID_LOGIN", "");
-                out.println(Utils.toJsonString(responseJson));
+	        	System.out.println("Server recebeu: " + requestJson);
+	            System.out.println("Server enviou: " + Utils.toJsonString(responseJson));
+	            out.println(Utils.toJsonString(responseJson));
                 return;
 	        }
 	        
@@ -165,7 +212,8 @@ public class Server extends Thread{
 	            int idcandidate = Integer.parseInt(rs.getString("idcandidate"));
 	            String token = JWTValidator.generateToken(idcandidate, "CANDIDATE");
 	            JsonObject responseJson = Utils.createResponse("LOGIN_CANDIDATE", "SUCCESS", token);
-	            System.out.println(Utils.toJsonString(responseJson));
+	            System.out.println("Server recebeu: " + requestJson);
+	            System.out.println("Server enviou: " + Utils.toJsonString(responseJson));
 	            out.println(Utils.toJsonString(responseJson));
 	            return;
 
@@ -175,6 +223,8 @@ public class Server extends Thread{
 	        JsonObject responseJson = Utils.createResponse("LOGIN_CANDIDATE", "INVALID_LOGIN", "");
 	        responseJson.remove("data"); 
 	        responseJson.add("data", responseData);
+	        System.out.println("Server recebeu: " + requestJson);
+            System.out.println("Server enviou: " + Utils.toJsonString(responseJson));
 	        out.println(Utils.toJsonString(responseJson));
 	    }
 
@@ -189,6 +239,8 @@ public class Server extends Thread{
 	        if(data.get("email").getAsString().equals("") || data.get("password").getAsString().equals("") || data.get("name").getAsString().equals("")) {
 	        	
 	        	JsonObject responseJson = Utils.createResponse("SIGNUP_CANDIDATE", "INVALID_FIELD", "");
+	        	System.out.println("Server recebeu: " + requestJson);
+	            System.out.println("Server enviou: " + Utils.toJsonString(responseJson));
                 out.println(Utils.toJsonString(responseJson));
                 return;
 	        }
@@ -200,7 +252,8 @@ public class Server extends Thread{
 
             if (rs.next()) {
                 JsonObject Response = Utils.createResponse("SIGNUP_CANDIDATE", "USER_EXISTS", "");
-
+                System.out.println("Server recebeu: " + requestJson);
+	            System.out.println("Server enviou: " + Utils.toJsonString(Response));
                 out.println(Utils.toJsonString(Response));
                 return;
             }
@@ -217,6 +270,8 @@ public class Server extends Thread{
 		        JsonObject responseJson = Utils.createResponse("SIGNUP_CANDIDATE", "SUCCESS", "");
 		        responseJson.remove("data"); 
 		        responseJson.add("data", responseData);
+		        System.out.println("Server recebeu: " + requestJson);
+	            System.out.println("Server enviou: " + Utils.toJsonString(responseJson));
 		        out.println(Utils.toJsonString(responseJson));
 	        }
 	    
@@ -243,34 +298,12 @@ public class Server extends Thread{
 
 	            JsonObject responseJson = Utils.createResponse("LOOKUP_ACCOUNT_CANDIDATE", "SUCCESS", "");
 	            responseJson.add("data",data);
+	            System.out.println("Server recebeu: " + requestJson);
+	            System.out.println("Server enviou: " + Utils.toJsonString(responseJson));
 	            out.println(Utils.toJsonString(responseJson));
 	            return;
 
 	        }
-	    	
-	    	/*if (requestJson != null && requestJson.has("token")) {
-	            String token = requestJson.get("token").getAsString();
-	            
-	            int userId = JWTValidator.getIdClaim(token);
-	            List<User> users = readUserDatabase();
-	            
-	            Optional<User> optionalUser = users.stream()
-	                                               .filter(user -> user.getId() == userId)
-	                                               .findFirst();
-	            if (optionalUser.isPresent()) {
-	                User user = optionalUser.get();
-	                
-	                JsonObject accountData = new JsonObject();
-	                accountData.addProperty("email", user.getEmail());
-	                accountData.addProperty("password", user.getPassword());
-	                accountData.addProperty("name", user.getName());
-	                JsonObject responseJson = Utils.createResponse("LOOKUP_ACCOUNT_CANDIDATE", "SUCCESS", "");
-	                responseJson.add("data", accountData);
-	                
-	                out.println(Utils.toJsonString(responseJson));
-	                out.flush();
-	            }
-	        }*/
 	    }
 	    
 	    private void handleUpdate(JsonObject requestJson, PrintWriter out) throws IOException, SQLException {
@@ -278,6 +311,8 @@ public class Server extends Thread{
 	        
 	        if ((data.get("email").getAsString() == null || data.get("email").getAsString().isEmpty() ) || (data.get("password").getAsString() == null || data.get("password").getAsString().isEmpty()) || (data.get("name").getAsString() == null || data.get("name").getAsString().isEmpty())) {
 	            JsonObject responseJson = Utils.createResponse("UPDATE_ACCOUNT_CANDIDATE", "INVALID_FIELD", "");
+	            System.out.println("Server recebeu: " + requestJson);
+	            System.out.println("Server enviou: " + Utils.toJsonString(responseJson));
 	            out.println(Utils.toJsonString(responseJson));
 	            return;
 	        }
@@ -296,7 +331,8 @@ public class Server extends Thread{
 
 	        if (rs.next()) {
 	            JsonObject Response = Utils.createResponse("UPDATE_ACCOUNT_CANDIDATE", "INVALID_EMAIL", "");
-
+	            System.out.println("Server recebeu: " + requestJson);
+	            System.out.println("Server enviou: " + Utils.toJsonString(Response));
 	            out.println(Utils.toJsonString(Response));
 	            return;
 	        }
@@ -311,59 +347,11 @@ public class Server extends Thread{
             st.executeUpdate();
 
             JsonObject responseJson = Utils.createResponse("UPDATE_ACCOUNT_CANDIDATE", "SUCCESS", "");
+            System.out.println("Server recebeu: " + requestJson);
+            System.out.println("Server enviou: " + Utils.toJsonString(responseJson));
             out.println(Utils.toJsonString(responseJson));
 	    }
 	    
-
-	        /*List<User> users = readUserDatabase();
-	        
-	       Optional<User> optionalUser = users.stream()
-	                                           .filter(user -> user.getId() == userId)
-	                                          .findFirst();
-	        if (optionalUser.isPresent()) {
-	           User user = optionalUser.get();
-	            boolean anyFieldUpdated = false;
-
-	            if (data.has("email")) {
-	                String newEmail = data.get("email").getAsString();
-	                if (!newEmail.isEmpty()) {
-	                    user.setEmail(newEmail);
-	                    anyFieldUpdated = true;
-	                }
-	            }
-	            if (data.has("password")) {
-	                String newPassword = data.get("password").getAsString();
-	                if (!newPassword.isEmpty()) {
-	                    user.setPassword(newPassword);
-	                    anyFieldUpdated = true;
-	                }
-	            }
-	            if (data.has("name")) {
-	                String newName = data.get("name").getAsString();
-	                if (!newName.isEmpty()) {
-	                    user.setName(newName);
-	                    anyFieldUpdated = true;
-	                }
-	            }
-
-	            if (!anyFieldUpdated) {
-	                JsonObject responseJson = Utils.createResponse("UPDATE_ACCOUNT_CANDIDATE", "INVALID_EMAIL", new JsonObject());
-	                out.println(Utils.toJsonString(responseJson));
-	                return;
-	            }
-
-	            writeUserDatabase(users);
-	            token = "";
-	            JsonObject responseData = new JsonObject();
-	            JsonObject responseJson = Utils.createResponse("UPDATE_ACCOUNT_CANDIDATE", "SUCCESS", "");
-	            responseJson.remove("data");
-	            responseJson.add("data", responseData);
-	            out.println(Utils.toJsonString(responseJson));
-
-	            return;
-	        }*/
-
-	        
 	    private void handleDelete(JsonObject requestJson, PrintWriter out) throws IOException, SQLException {
 	        //JsonObject data = requestJson.getAsJsonObject("data");
 	        String token = requestJson.get("token").getAsString();
@@ -375,39 +363,9 @@ public class Server extends Thread{
 	        st.executeUpdate();
 
 	        JsonObject responseJson = Utils.createResponse("DELETE_ACCOUNT_CANDIDATE", "SUCCESS", "");
+	        System.out.println("Server recebeu: " + requestJson);
+            System.out.println("Server enviou: " + Utils.toJsonString(responseJson));
 	        out.println(Utils.toJsonString(responseJson));
-	        
-	        /*try {
-	            int userId = JWTValidator.getIdClaim(token);
-	            List<User> users = readUserDatabase();
-	            if (!users.stream().anyMatch(user -> user.getId() == userId)) {
-	                JsonObject responseJson = Utils.createResponse("DELETE_ACCOUNT_CANDIDATE", "INVALID_EMAIL", "");
-	                out.println(Utils.toJsonString(responseJson));
-	                return;
-	            }
-	            
-
-	            for (User user : users) {
-	                if (user.getId() == userId) {
-	                    users.remove(user);
-	                    writeUserDatabase(users);
-	                    JsonObject responseData = new JsonObject();
-	                    JsonObject responseJson = Utils.createResponse("DELETE_ACCOUNT_CANDIDATE", "SUCCESS", "");
-	                    responseJson.remove("data");
-	                    responseJson.add("data", responseData);
-	                    responseJson.remove("token");
-	                    responseJson.add("token", responseData);
-	                    out.println(Utils.toJsonString(responseJson));
-	                    return;
-	                }
-	            }
-	        } catch (JWTVerificationException e) {
-	            JsonObject responseJson = Utils.createResponse("DELETE_ACCOUNT_CANDIDATE", "INVALID_TOKEN", "");
-	            out.println(Utils.toJsonString(responseJson));
-	            return;
-	        }
-	        JsonObject responseJson = Utils.createResponse("DELETE_ACCOUNT_CANDIDATE", "USER_NOT_FOUND", "");
-	        out.println(Utils.toJsonString(responseJson));*/
 	    }
 	  
 	    public void handleLogout(JsonObject requestJson, PrintWriter out) throws IOException {
@@ -416,10 +374,445 @@ public class Server extends Thread{
 	    	JsonObject accountData = new JsonObject();
 	        JsonObject responseJson = Utils.createResponse("LOGOUT_CANDIDATE", "SUCCESS", new JsonObject()); 
 	        responseJson.add("data", accountData);
-	    
+	        System.out.println("Server recebeu: " + requestJson);
+            System.out.println("Server enviou: " + Utils.toJsonString(responseJson));
 	        out.println(Utils.toJsonString(responseJson));
 	        out.flush();
 	    }
+	    
+	    private void handleIncludeSkill(JsonObject requestJson, PrintWriter out) throws IOException, SQLException {
+	        JsonObject data = requestJson.getAsJsonObject("data");
+	        String token = requestJson.get("token").getAsString();
+	        int idcandidate = JWTValidator.getIdClaim(token);
+	        String skill = data.get("skill").getAsString();
+	        int experience = data.get("experience").getAsInt();
+	        
+	        PreparedStatement st;
+	        ResultSet rs;
+
+	        if(data.get("skill").getAsString().equals("") || data.get("experience").getAsString().equals("")) {
+	        	
+	        	JsonObject responseJson = Utils.createResponse("INCLUDE_SKILL", "INVALID_FIELD", "");
+	        	System.out.println("Server recebeu: " + requestJson);
+	            System.out.println("Server enviou: " + Utils.toJsonString(responseJson));
+                out.println(Utils.toJsonString(responseJson));
+                return;
+	        }
+	        
+	        st = ConnectionBD.conectaBD().prepareStatement("SELECT * FROM skill_dataset WHERE skills_available = ?");
+            st.setString(1, skill);
+            
+            rs = st.executeQuery();
+
+            if (rs.next()) {
+            	int idskill = rs.getInt("idskill_dataset");
+            	st = ConnectionBD.conectaBD().prepareStatement("SELECT * FROM skills WHERE candidate_id = ? AND idskill_dataset = ?");
+            	st.setInt(1, idcandidate);
+            	st.setInt(2, idskill);
+            	rs = st.executeQuery();
+            	
+            	if (rs.next()) {
+            		
+            		JsonObject responseData = new JsonObject();
+    		        JsonObject responseJson = Utils.createResponse("INCLUDE_SKILL", "SKILL_EXISTS", "");
+    		        responseJson.remove("data"); 
+    		        responseJson.add("data", responseData);
+    		        System.out.println("Server recebeu: " + requestJson);
+    	            System.out.println("Server enviou: " + Utils.toJsonString(responseJson));
+    		        out.println(Utils.toJsonString(responseJson));
+            		
+            	}
+            	
+            	else {
+            		
+            		st = ConnectionBD.conectaBD().prepareStatement("INSERT INTO skills (candidate_id, idskill_dataset, experience) VALUES (?, ?, ?)");
+                    st.setInt(1, idcandidate);
+                    st.setInt(2, idskill);
+                    st.setInt(3, experience);
+                    st.executeUpdate();
+                    
+                    JsonObject responseData = new JsonObject();
+    		        JsonObject responseJson = Utils.createResponse("INCLUDE_SKILL", "SUCCESS", "");
+    		        responseJson.remove("data"); 
+    		        responseJson.add("data", responseData);
+    		        System.out.println("Server recebeu: " + requestJson);
+    	            System.out.println("Server enviou: " + Utils.toJsonString(responseJson));
+    		        out.println(Utils.toJsonString(responseJson));
+            		
+            	}
+            	
+            }
+            
+            else {
+            	
+            	JsonObject responseData = new JsonObject();
+		        JsonObject responseJson = Utils.createResponse("INCLUDE_SKILL", "SKILL_NOT_EXISTS", "");
+		        responseJson.remove("data"); 
+		        responseJson.add("data", responseData);
+		        System.out.println("Server recebeu: " + requestJson);
+	            System.out.println("Server enviou: " + Utils.toJsonString(responseJson));
+		        out.println(Utils.toJsonString(responseJson));
+                
+            }
+		        
+	        }
+	    
+	    private void handleLookupSkill(JsonObject requestJson, PrintWriter out) throws IOException, SQLException{
+	        
+	    	JsonObject data = requestJson.getAsJsonObject("data");
+	    	String token = requestJson.get("token").getAsString();
+	        int idcandidate = JWTValidator.getIdClaim(token);
+	        String skill = data.get("skill").getAsString();
+	        
+	        PreparedStatement st;
+	        st = ConnectionBD.conectaBD().prepareStatement("SELECT * FROM skill_dataset WHERE skills_available = ?"); // Olha se existe no BD a skill, caso sim, recebe a id p validar se o usuário possui aquela skill
+	        st.setString(1, skill);
+
+	        ResultSet rs;
+	        rs = st.executeQuery();
+
+	        if (rs.next()) { // verifica se a habilidade que o usuário escreveu tem na sua "ficha"
+	        	int idskill = rs.getInt("idskill_dataset");
+	        	st = ConnectionBD.conectaBD().prepareStatement("SELECT * FROM skills WHERE candidate_id = ? AND idskill_dataset = ?");
+            	st.setInt(1, idcandidate);
+	        	st.setInt(2, idskill);
+	        	rs = st.executeQuery();
+	        	
+            	if(rs.next()) {
+            		// Skill existe na "ficha" do usuário
+            		int experience = rs.getInt("experience");
+            		data.addProperty("experience", experience);
+            		JsonObject responseJson = Utils.createResponse("LOOKUP_SKILL", "SUCCESS", "");
+    	            responseJson.add("data",data);
+    	            System.out.println("Server recebeu: " + requestJson);
+    	            System.out.println("Server enviou: " + Utils.toJsonString(responseJson));
+    	            out.println(Utils.toJsonString(responseJson));
+    	            return;
+            		
+            	}
+
+            	else {           		
+            		// a skill existe, mas o usuário não tem ela
+            		JsonObject responseData = new JsonObject();
+    		        JsonObject responseJson = Utils.createResponse("LOOKUP_SKILL", "SKILL_NOT_FOUND", "");
+    		        responseJson.remove("data"); 
+    		        responseJson.add("data", responseData);
+    		        System.out.println("Server recebeu: " + requestJson);
+    	            System.out.println("Server enviou: " + Utils.toJsonString(responseJson));
+    		        out.println(Utils.toJsonString(responseJson));
+            		
+            	}
+
+	        }
+	        
+	        else {
+            	
+            	JsonObject responseData = new JsonObject();
+		        JsonObject responseJson = Utils.createResponse("LOOKUP_SKILL", "SKILL_NOT_FOUND", "");
+		        responseJson.remove("data"); 
+		        responseJson.add("data", responseData);
+		        System.out.println("Server recebeu: " + requestJson);
+	            System.out.println("Server enviou: " + Utils.toJsonString(responseJson));
+		        out.println(Utils.toJsonString(responseJson));
+                
+            }
+	    }
+	    
+	    private void handleLookupSkillSet(JsonObject requestJson, PrintWriter out) throws IOException, SQLException {
+	        String token = requestJson.get("token").getAsString();
+	        int idcandidate = JWTValidator.getIdClaim(token);
+
+	        // SQL para buscar as skills do candidato, fazendo join com a tabela skill_dataset permitindo mostrar o nome das skills invés do id
+	        String query = "SELECT s.experience, sd.skills_available " +
+	                       "FROM skills s " +
+	                       "JOIN skill_dataset sd ON s.idskill_dataset = sd.idskill_dataset " +
+	                       "WHERE s.candidate_id = ?";
+
+	        PreparedStatement st = ConnectionBD.conectaBD().prepareStatement(query);
+	        st.setInt(1, idcandidate);
+
+	        ResultSet rs = st.executeQuery();
+
+	        // Criação de uma ArrayList para armazenar as skills
+	        ArrayList<JsonObject> skillList = new ArrayList<>();
+
+	        while (rs.next()) {
+	            int experience = rs.getInt("experience");
+	            String skillName = rs.getString("skills_available");
+
+	            // Criação de um objeto Json para cada skill
+	            JsonObject skillJson = new JsonObject();
+	            skillJson.addProperty("skill", skillName);
+	            skillJson.addProperty("experience", experience);
+
+	            // Adição do objeto Json à ArrayList
+	            skillList.add(skillJson);
+	        }
+
+	        // Criação do objeto de resposta
+	        JsonObject responseJson = Utils.createResponse("LOOKUP_SKILLSET", "SUCCESS", "");
+	        JsonObject responseData = new JsonObject();
+	        JsonArray skillsArray = new JsonArray();
+
+	        for (JsonObject skillJson : skillList) {
+	            skillsArray.add(skillJson);
+	        }
+
+	        // Adiciona o tamanho do array de skills e o array de skills ao objeto data
+	        responseData.addProperty("skillset_size", skillList.size());
+	        responseData.add("skillset", skillsArray);
+
+	        // Adiciona o objeto data ao objeto de resposta
+	        responseJson.add("data", responseData);
+
+	        System.out.println("Server recebeu: " + requestJson);
+	        System.out.println("Server enviou: " + Utils.toJsonString(responseJson));
+	        out.println(Utils.toJsonString(responseJson));
+	    }
+
+
+	    
+	    private void handleDeleteSkill(JsonObject requestJson, PrintWriter out) throws IOException, SQLException {
+	    	JsonObject data = requestJson.getAsJsonObject("data");
+	    	String token = requestJson.get("token").getAsString();
+	        int idcandidate = JWTValidator.getIdClaim(token);
+	        String skill = data.get("skill").getAsString();
+	        
+	        PreparedStatement st;
+	        st = ConnectionBD.conectaBD().prepareStatement("SELECT * FROM skill_dataset WHERE skills_available = ?"); // Olha se existe no BD a skill, caso sim, recebe a id p validar se o usuário possui aquela skill
+	        st.setString(1, skill);
+
+	        ResultSet rs;
+	        rs = st.executeQuery();
+
+	        if (rs.next()) { // verifica se a habilidade que o usuário escreveu tem na sua "ficha"
+	        	int idskill = rs.getInt("idskill_dataset");
+	        	st = ConnectionBD.conectaBD().prepareStatement("SELECT * FROM skills WHERE candidate_id = ? AND idskill_dataset = ?");
+            	st.setInt(1, idcandidate);
+	        	st.setInt(2, idskill);
+	        	rs = st.executeQuery();
+            	if(rs.next()) {
+            		// Skill existe na "ficha" do usuário
+            		
+            		st = ConnectionBD.conectaBD().prepareStatement("DELETE FROM skills WHERE candidate_id = ? AND idskill_dataset = ?");
+            		st.setInt(1, idcandidate);
+    	        	st.setInt(2, idskill);
+            		st.executeUpdate();
+            		JsonObject responseData = new JsonObject();
+    		        JsonObject responseJson = Utils.createResponse("DELETE_SKILL", "SUCCESS", "");
+            		responseJson.remove("data");
+    	            responseJson.add("data",responseData);
+    	            System.out.println("Server recebeu: " + requestJson);
+    	            System.out.println("Server enviou: " + Utils.toJsonString(responseJson));
+    	            out.println(Utils.toJsonString(responseJson));
+    	            return;
+            		
+            	}
+
+            	else {           		
+            		// a skill existe, mas o usuário não tem ela
+            		JsonObject responseData = new JsonObject();
+    		        JsonObject responseJson = Utils.createResponse("DELETE_SKILL", "SKILL_NOT_FOUND", "");
+    		        responseJson.remove("data"); 
+    		        responseJson.add("data", responseData);
+    		        System.out.println("Server recebeu: " + requestJson);
+    	            System.out.println("Server enviou: " + Utils.toJsonString(responseJson));
+    		        out.println(Utils.toJsonString(responseJson));
+            		
+            	}
+
+	        }
+	        
+	        else {
+            	
+            	JsonObject responseData = new JsonObject();
+		        JsonObject responseJson = Utils.createResponse("DELETE_SKILL", "SKILL_NOT_FOUND", "");
+		        responseJson.remove("data"); 
+		        responseJson.add("data", responseData);
+		        System.out.println("Server recebeu: " + requestJson);
+	            System.out.println("Server enviou: " + Utils.toJsonString(responseJson));
+		        out.println(Utils.toJsonString(responseJson));
+                
+            }
+	    }
+	    
+	    
+	    private void handleUpdateSkill(JsonObject requestJson, PrintWriter out) throws IOException, SQLException {
+	        JsonObject data = requestJson.getAsJsonObject("data");
+	        
+	        if ((data.get("skill").getAsString() == null || data.get("skill").getAsString().isEmpty() ) || (data.get("newSkill").getAsString() == null || data.get("newSkill").getAsString().isEmpty()) || (data.get("experience").getAsString() == null || data.get("experience").getAsString().isEmpty())) {
+	            JsonObject responseJson = Utils.createResponse("UPDATE_SKILL", "INVALID_FIELD", "");
+	            System.out.println("Server recebeu: " + requestJson);
+	            System.out.println("Server enviou: " + Utils.toJsonString(responseJson));
+	            out.println(Utils.toJsonString(responseJson));
+	            return;
+	        }
+	        
+	        
+	        String token = requestJson.get("token").getAsString();
+	        int idcandidate = JWTValidator.getIdClaim(token);
+	        String skill = data.get("skill").getAsString();
+	        String newSkill = data.get("newSkill").getAsString();
+	        int experience = data.get("experience").getAsInt();
+
+
+	        PreparedStatement st;
+	        st = ConnectionBD.conectaBD().prepareStatement("SELECT * FROM skill_dataset WHERE skills_available = ?"); // Olha se existe no BD a skill atual
+	        st.setString(1, skill);
+	        ResultSet rs;
+	        rs = st.executeQuery();
+	        
+
+	        if (rs.next()) { // verifica se a nova habilidade que o usuário escreveu tem no BD
+	        	int idSkill = rs.getInt("idskill_dataset");
+	        	st = ConnectionBD.conectaBD().prepareStatement("SELECT * FROM skill_dataset WHERE skills_available = ?");
+		        st.setString(1, newSkill);
+	        	rs = st.executeQuery();
+	        	
+	        	if(rs.next()) { // Verifica se a nova skill é igual à alguma skill já descrita
+	        		int idnewSkill = rs.getInt("idskill_dataset");
+	        		st = ConnectionBD.conectaBD().prepareStatement("SELECT * FROM skills WHERE idskill_dataset = ? AND candidate_id = ?");
+			        st.setInt(1, idnewSkill);
+			        st.setInt(2, idcandidate);
+		        	rs = st.executeQuery();
+		        	
+		        	if(rs.next()) { 
+		        		
+		        		JsonObject responseData = new JsonObject();
+	    		        JsonObject responseJson = Utils.createResponse("UPDATE_SKILL", "SKILL_EXISTS", "");
+	    		        responseJson.remove("data"); 
+	    		        responseJson.add("data", responseData);
+	    		        System.out.println("Server recebeu: " + requestJson);
+	    	            System.out.println("Server enviou: " + Utils.toJsonString(responseJson));
+	    		        out.println(Utils.toJsonString(responseJson));
+		        		
+		        	}
+		        	
+		        	else {
+	            		st = ConnectionBD.conectaBD().prepareStatement("UPDATE skills SET idskill_dataset = ?, experience = ? WHERE candidate_id = ? and idskill_dataset = ? ");
+	                    st.setInt(1, idnewSkill);
+	                    st.setInt(2, experience);
+	                    st.setInt(3, idcandidate);
+	                    st.setInt(4, idSkill);
+	                    st.executeUpdate();
+	            		JsonObject responseData = new JsonObject();
+	    		        JsonObject responseJson = Utils.createResponse("UPDATE_SKILL", "SUCCESS", "");
+	            		responseJson.remove("data");
+	    	            responseJson.add("data",responseData);
+	    	            System.out.println("Server recebeu: " + requestJson);
+	    	            System.out.println("Server enviou: " + Utils.toJsonString(responseJson));
+	    	            out.println(Utils.toJsonString(responseJson));
+	    	            return;
+		        		
+		        	}
+		        	
+	        	}
+
+            	else {           		
+            		// a skill existe, mas o usuário não tem ela
+            		JsonObject responseData = new JsonObject();
+    		        JsonObject responseJson = Utils.createResponse("UPDATE_SKILL", "SKILL_NOT_FOUND", "");
+    		        responseJson.remove("data"); 
+    		        responseJson.add("data", responseData);
+    		        System.out.println("Server recebeu: " + requestJson);
+    	            System.out.println("Server enviou: " + Utils.toJsonString(responseJson));
+    		        out.println(Utils.toJsonString(responseJson));
+            		
+            	}
+
+	        }
+	        
+	        else {
+            	
+            	JsonObject responseData = new JsonObject();
+		        JsonObject responseJson = Utils.createResponse("UPDATE_SKILL", "SKILL_NOT_FOUND", "");
+		        responseJson.remove("data"); 
+		        responseJson.add("data", responseData);
+		        System.out.println("Server recebeu: " + requestJson);
+	            System.out.println("Server enviou: " + Utils.toJsonString(responseJson));
+		        out.println(Utils.toJsonString(responseJson));
+                
+            }
+	    }
+	    
+	    private void handleSearchJob(JsonObject requestJson, PrintWriter out) throws IOException, SQLException{
+	    	JsonObject data = requestJson.getAsJsonObject("data");
+	    	int experience = data.get("experience").getAsInt();
+	    	String skill = data.get("skill").getAsString();
+	    	String filter = data.get("filter").getAsString();
+	    	String token = requestJson.get("token").getAsString();
+	        int idcandidate = JWTValidator.getIdClaim(token);
+	        
+	        
+	        PreparedStatement st;
+	        ResultSet rs;
+	        
+	        //Busca por Experiência
+	        if(data.get("skill").getAsString() == null || data.get("skill").getAsString().isEmpty())
+	        {
+	        	String query = "SELECT j.experience " +
+	                       "FROM job_dataset j " +
+	                       "JOIN skill_dataset sd ON j.skill = sd.idskill_dataset " +
+	                       "WHERE j.experience = ?";
+
+	        	st = ConnectionBD.conectaBD().prepareStatement(query);
+	        	st.setInt(1, experience);
+		        
+		        rs = st.executeQuery();
+		        
+		        if(rs.next()) {
+		        	
+		        		JsonObject responseJson = Utils.createResponse("SEARCH_JOB", "SUCCESS", "");
+			            responseJson.add("data",data);
+			            System.out.println("Server recebeu: " + requestJson);
+			            System.out.println("Server enviou: " + Utils.toJsonString(responseJson));
+			            out.println(Utils.toJsonString(responseJson));
+			            return;
+		        }
+	        }
+	        
+	        // Busca por Skill
+	        else if(data.get("experience").getAsString() == null || data.get("experience").getAsString().isEmpty())
+	        {
+	        	
+	        	JsonObject responseJson = Utils.createResponse("SEARCH_JOB", "SUCCESS", "");
+		           // responseJson.add("data",data);
+		            System.out.println("Server recebeu: " + requestJson);
+		            System.out.println("Server enviou: " + Utils.toJsonString(responseJson));
+		            out.println(Utils.toJsonString(responseJson));
+		            return;
+	        	
+	        }
+	        
+	        // Busca por ambos (uso de filtro)
+	        else {
+	        	
+	        }
+	        
+	       /* PreparedStatement st;
+	        st = ConnectionBD.conectaBD().prepareStatement("SELECT * FROM candidate WHERE idskill = ?");
+	        st.setInt(1, idskill);
+
+	        ResultSet rs;
+	        rs = st.executeQuery();
+
+	        if (rs.next()) {
+	            String email = rs.getString("email");
+	            String password = rs.getString("password");
+	            String name = rs.getString("name");
+	            JsonObject data = new JsonObject();
+	            data.addProperty("email",email);
+	            data.addProperty("password",password);
+	            data.addProperty("name",name);*/
+
+	            JsonObject responseJson = Utils.createResponse("SEARCH_JOB", "SUCCESS", "");
+	           // responseJson.add("data",data);
+	            System.out.println("Server recebeu: " + requestJson);
+	            System.out.println("Server enviou: " + Utils.toJsonString(responseJson));
+	            out.println(Utils.toJsonString(responseJson));
+	            return;
+
+	        }
 	    
 	    //Empresa
 	    
@@ -432,38 +825,18 @@ public class Server extends Thread{
 	        String description = data.get("description").getAsString();
 	        PreparedStatement st;
 	        ResultSet rs;
-	        //int id;
 
 	        if(data.get("email").getAsString().equals("") || data.get("password").getAsString().equals("") || data.get("name").getAsString().equals("") || data.get("industry").getAsString().equals("") || data.get("description").getAsString().equals("")) {
 	        	JsonObject responseData = new JsonObject();
 	        	JsonObject responseJson = Utils.createResponse("SIGNUP_RECRUITER", "USER_EXISTS", "");
 	        	responseJson.remove("data"); 
 	        	responseJson.add("data", responseData);
+	        	System.out.println("Server recebeu: " + requestJson);
+	            System.out.println("Server enviou: " + Utils.toJsonString(responseJson));
                 out.println(Utils.toJsonString(responseJson));
                 return;
 	        }
 	        
-	       /* List<Company> companys = readCompanyDatabase();
-	        if(companys.size() == 0) {
-	        	id = 1;
-	        }
-	        else {
-	        	Company lastCreated = companys.get(companys.size()-1);
-	        	id = lastCreated.getId() + 1;
-	        }
-	        
-	        for (Company company : companys) {
-	            if (company.getEmail().equals(email)) {
-	                
-	                JsonObject responseJson = Utils.createResponse("SIGNUP_RECRUITER", "USER_EXISTS", "");
-	                out.println(Utils.toJsonString(responseJson));
-	                return;
-	            }
-	        }
-
-	        Company newUser = new Company(email, password, name, industry, description, id);
-	        companys.add(newUser);
-	        writeCompanyDatabase(companys);*/
 	        st = ConnectionBD.conectaBD().prepareStatement("SELECT * FROM recruiter WHERE email = ?");
             st.setString(1, email);
 
@@ -471,7 +844,8 @@ public class Server extends Thread{
 
             if (rs.next()) {
                 JsonObject Response = Utils.createResponse("SIGNUP_RECRUITER", "USER_EXISTS", "");
-
+                System.out.println("Server recebeu: " + requestJson);
+	            System.out.println("Server enviou: " + Utils.toJsonString(Response));
                 out.println(Utils.toJsonString(Response));;
                 return;
             }
@@ -491,6 +865,8 @@ public class Server extends Thread{
 	        JsonObject responseJson = Utils.createResponse("SIGNUP_RECRUITER", "SUCCESS", "");
 	        responseJson.remove("data"); 
 	        responseJson.add("data", responseData);
+	        System.out.println("Server recebeu: " + requestJson);
+            System.out.println("Server enviou: " + Utils.toJsonString(responseJson));
 	        out.println(Utils.toJsonString(responseJson));
 	    }
 	    
@@ -505,31 +881,11 @@ public class Server extends Thread{
         	JsonObject responseJson = Utils.createResponse("LOGIN_RECRUITER", "INVALID_LOGIN", "");
         	responseJson.remove("data"); 
 	        responseJson.add("data", responseData);
+	        System.out.println("Server recebeu: " + requestJson);
+            System.out.println("Server enviou: " + Utils.toJsonString(responseJson));
             out.println(Utils.toJsonString(responseJson));
             return;
         }
-
-	        /*List<Company> companys = readCompanyDatabase();
-	        for (Company company : companys) {
-	            if (company.getEmail().equals(email)) {
-	                if (company.getPassword().equals(password)) {
-	                	
-	                    String token = JWTValidator.generateToken(company.getId(), "RECRUITER");
-	                    JsonObject responseJson = Utils.createResponse("LOGIN_RECRUITER", "SUCCESS", token);
-	                    out.println(Utils.toJsonString(responseJson));
-	                    return;
-	                } else {
-	                    
-	                	JsonObject responseData = new JsonObject();
-	                    JsonObject responseJson = Utils.createResponse("LOGIN_RECRUITER", "INVALID_LOGIN", "");
-	                    responseJson.remove("data"); 
-	                    responseJson.add("data", responseData);
-	                    out.println(Utils.toJsonString(responseJson));
-	                    return;
-	                }
-	            }
-	        }*/
-	        
 	        PreparedStatement st;
 	        st = ConnectionBD.conectaBD().prepareStatement("SELECT * FROM recruiter WHERE email = ? AND password = ?");
 	        st.setString(1, email);
@@ -542,7 +898,8 @@ public class Server extends Thread{
 	            int idrecruiter = Integer.parseInt(rs.getString("idrecruiter"));
 	            String token = JWTValidator.generateToken(idrecruiter, "RECRUITER");
 	            JsonObject responseJson = Utils.createResponse("LOGIN_RECRUITER", "SUCCESS", token);
-	            System.out.println(Utils.toJsonString(responseJson));
+	            System.out.println("Server recebeu: " + requestJson);
+	            System.out.println("Server enviou: " + Utils.toJsonString(responseJson));
 	            out.println(Utils.toJsonString(responseJson));
 	            return;
 
@@ -552,6 +909,8 @@ public class Server extends Thread{
 	        JsonObject responseJson = Utils.createResponse("LOGIN_RECRUITER", "INVALID_LOGIN", "");
 	        responseJson.remove("data"); 
 	        responseJson.add("data", responseData);
+	        System.out.println("Server recebeu: " + requestJson);
+            System.out.println("Server enviou: " + Utils.toJsonString(responseJson));
 	        out.println(Utils.toJsonString(responseJson));
 	    }
 	    
@@ -561,7 +920,8 @@ public class Server extends Thread{
 	    	JsonObject accountData = new JsonObject();
 	        JsonObject responseJson = Utils.createResponse("LOGOUT_RECRUITER", "SUCCESS", new JsonObject());
 	        responseJson.add("data", accountData);
-	    
+	        System.out.println("Server recebeu: " + requestJson);
+            System.out.println("Server enviou: " + Utils.toJsonString(responseJson));
 	        out.println(Utils.toJsonString(responseJson));
 	        out.flush();
 	    }
@@ -593,37 +953,12 @@ public class Server extends Thread{
 
 	            JsonObject responseJson = Utils.createResponse("LOOKUP_ACCOUNT_RECRUITER", "SUCCESS", "");
 	            responseJson.add("data",data);
+	            System.out.println("Server recebeu: " + requestJson);
+	            System.out.println("Server enviou: " + Utils.toJsonString(responseJson));
 	            out.println(Utils.toJsonString(responseJson));
 	            return;
 
 	        }
-	    	
-	    	
-	    	/*if (requestJson != null && requestJson.has("token")) {
-	            String token = requestJson.get("token").getAsString();
-	            
-	            int companyId = JWTValidator.getIdClaim(token);
-	            List<Company> companys = readCompanyDatabase();
-	            
-	            Optional<Company> optionalCompany = companys.stream()
-	                                               .filter(company -> company.getId() == companyId)
-	                                               .findFirst();
-	            if (optionalCompany.isPresent()) {
-	                Company company = optionalCompany.get();
-	                
-	                JsonObject accountData = new JsonObject();
-	                accountData.addProperty("email", company.getEmail());
-	                accountData.addProperty("password", company.getPassword());
-	                accountData.addProperty("name", company.getName());
-	                accountData.addProperty("industry", company.getIndustry());
-	                accountData.addProperty("description", company.getDescription());
-	                JsonObject responseJson = Utils.createResponse("LOOKUP_ACCOUNT_RECRUITER", "SUCCESS", "");
-	                responseJson.add("data", accountData);
-	                
-	                out.println(Utils.toJsonString(responseJson));
-	                out.flush();
-	            }
-	        }*/
 	    }
 	    
 	    private void handleUpdateCompany(JsonObject requestJson, PrintWriter out) throws IOException, SQLException {
@@ -651,7 +986,8 @@ public class Server extends Thread{
 
 	        if (rs.next()) {
 	            JsonObject Response = Utils.createResponse("UPDATE_ACCOUNT_RECRUITER", "INVALID_EMAIL", "");
-
+	            System.out.println("Server recebeu: " + requestJson);
+	            System.out.println("Server enviou: " + Utils.toJsonString(Response));
 	            out.println(Utils.toJsonString(Response));
 	            return;
 	        }
@@ -668,77 +1004,11 @@ public class Server extends Thread{
 	        st.executeUpdate();
 
 	        JsonObject responseJson = Utils.createResponse("UPDATE_ACCOUNT_RECRUITER", "SUCCESS", "");
+	        System.out.println("Server recebeu: " + requestJson);
+            System.out.println("Server enviou: " + Utils.toJsonString(responseJson));
 	        out.println(Utils.toJsonString(responseJson));
 	    }
-	        
-	      /*  List<Company> companys = readCompanyDatabase();
-	        
-	        Optional<Company> optionalCompany = companys.stream()
-	                                           .filter(company -> company.getId() == companyId)
-	                                           .findFirst();
-	        if (optionalCompany.isPresent()) {
-	            Company company = optionalCompany.get();
-	            boolean anyFieldUpdated = false;
 
-	            if (data.has("email")) {
-	                String newEmail = data.get("email").getAsString();
-	                if (!newEmail.isEmpty()) {
-	                    company.setEmail(newEmail);
-	                    anyFieldUpdated = true;
-	                }
-	            }
-	            if (data.has("password")) {
-	                String newPassword = data.get("password").getAsString();
-	                if (!newPassword.isEmpty()) {
-	                    company.setPassword(newPassword);
-	                    anyFieldUpdated = true;
-	                }
-	            }
-	            if (data.has("name")) {
-	                String newName = data.get("name").getAsString();
-	                if (!newName.isEmpty()) {
-	                    company.setName(newName);
-	                    anyFieldUpdated = true;
-	                }
-	            }
-	            
-	            if (data.has("industry")) {
-	                String newIndustry = data.get("industry").getAsString();
-	                if (!newIndustry.isEmpty()) {
-	                    company.setIndustry(newIndustry);
-	                    anyFieldUpdated = true;
-	                }
-	            }
-	            
-	            if (data.has("description")) {
-	                String newDescription = data.get("description").getAsString();
-	                if (!newDescription.isEmpty()) {
-	                    company.setDescription(newDescription);
-	                    anyFieldUpdated = true;
-	                }
-	            }
-
-	            if (!anyFieldUpdated) {
-	                JsonObject responseJson = Utils.createResponse("UPDATE_ACCOUNT_RECRUITER", "INVALID_EMAIL", new JsonObject());
-	                out.println(Utils.toJsonString(responseJson));
-	                return;
-	            }
-
-	            writeCompanyDatabase(companys);
-	            token = "";
-	            JsonObject responseData = new JsonObject();
-	            JsonObject responseJson = Utils.createResponse("UPDATE_ACCOUNT_RECRUITER", "SUCCESS", "");
-	            responseJson.remove("data");
-	            responseJson.add("data", responseData);
-	            out.println(Utils.toJsonString(responseJson));
-
-	            return;
-	        }
-
-	        JsonObject responseJson = Utils.createResponse("UPDATE_ACCOUNT_RECRUITER", "INVALID_EMAIL", new JsonObject());
-	        out.println(Utils.toJsonString(responseJson));
-	    }*/
-	    
 	    private void handleDeleteCompany(JsonObject requestJson, PrintWriter out) throws IOException, SQLException {
 	        JsonObject data = requestJson.getAsJsonObject("data");
 	        String token = requestJson.get("token").getAsString();
@@ -752,41 +1022,263 @@ public class Server extends Thread{
 	        st.executeUpdate();
 
 	        JsonObject responseJson = Utils.createResponse("DELETE_ACCOUNT_RECRUITER", "SUCCESS", "");
+	        System.out.println("Server recebeu: " + requestJson);
+            System.out.println("Server enviou: " + Utils.toJsonString(responseJson));
 	        out.println(Utils.toJsonString(responseJson));
-	        /*
-	        try {
-	            int companyId = JWTValidator.getIdClaim(token);
-	            List<Company> companys = readCompanyDatabase();
-	            if (!companys.stream().anyMatch(company -> company.getId() == companyId)) {
-	                JsonObject responseJson = Utils.createResponse("DELETE_ACCOUNT_RECRUITER", "INVALID_EMAIL", "");
-	                out.println(Utils.toJsonString(responseJson));
-	                return;
-	            }
-	            
+	    }
+	    
+	    private void handleIncludeJob(JsonObject requestJson, PrintWriter out) throws IOException, SQLException {
+	    	JsonObject data = requestJson.getAsJsonObject("data");
+	        String token = requestJson.get("token").getAsString();
+	        int recruiter_id = JWTValidator.getIdClaim(token);
+	        String skill = data.get("skill").getAsString();
+	        int experience = data.get("experience").getAsInt();
+	        
+	        PreparedStatement st;
+	        ResultSet rs;
 
-	            for (Company company : companys) {
-	                if (company.getId() == companyId) {
-	                    companys.remove(company);
-	                    writeCompanyDatabase(companys);
-	                    JsonObject responseData = new JsonObject();
-	                    JsonObject responseJson = Utils.createResponse("DELETE_ACCOUNT_RECRUITER", "SUCCESS", "");
-	                    responseJson.remove("data");
-	                    responseJson.add("data", responseData);
-	                    responseJson.remove("token");
-	                    responseJson.add("token", responseData);
-	                    out.println(Utils.toJsonString(responseJson));
-	                    return;
-	                }
-	            }
-	        } catch (JWTVerificationException e) {
-	            JsonObject responseJson = Utils.createResponse("DELETE_ACCOUNT_RECRUITER", "INVALID_TOKEN", "");
-	            out.println(Utils.toJsonString(responseJson));
-	            return;
+	        if(data.get("skill").getAsString().equals("") || data.get("experience").getAsString().equals("")) {
+	        	
+	        	JsonObject responseJson = Utils.createResponse("INCLUDE_JOB", "INVALID_FIELD", "");
+	        	System.out.println("Server recebeu: " + requestJson);
+	            System.out.println("Server enviou: " + Utils.toJsonString(responseJson));
+                out.println(Utils.toJsonString(responseJson));
+                return;
 	        }
-	        JsonObject responseJson = Utils.createResponse("DELETE_ACCOUNT_RECRUITER", "USER_NOT_FOUND", "");
-	        out.println(Utils.toJsonString(responseJson));*/
+	        
+	        st = ConnectionBD.conectaBD().prepareStatement("SELECT * FROM skill_dataset WHERE BINARY skills_available = ?");
+            st.setString(1, skill);
+            
+            rs = st.executeQuery();
+            
+            if(rs.next()) {
+            	int idskill = rs.getInt("idskill_dataset");
+            	st = ConnectionBD.conectaBD().prepareStatement("INSERT INTO job_dataset (experience, skill, recruiter_id) VALUES (?, ?, ?)");
+                st.setInt(1, experience);
+                st.setInt(2, idskill);
+                st.setInt(3, recruiter_id);
+                st.executeUpdate();  
+                JsonObject responseData = new JsonObject();
+                JsonObject responseJson = Utils.createResponse("INCLUDE_JOB", "SUCCESS", "");
+                responseJson.remove("data"); 
+                responseJson.add("data", responseData);
+                System.out.println("Server recebeu: " + requestJson);
+                System.out.println("Server enviou: " + Utils.toJsonString(responseJson));
+                out.println(Utils.toJsonString(responseJson));
+ 
+            }
+            
+            else {
+            	
+            	JsonObject responseData = new JsonObject();
+		        JsonObject responseJson = Utils.createResponse("INCLUDE_SKILL", "SKILL_NOT_EXISTS", "");
+		        responseJson.remove("data"); 
+		        responseJson.add("data", responseData);
+		        System.out.println("Server recebeu: " + requestJson);
+	            System.out.println("Server enviou: " + Utils.toJsonString(responseJson));
+		        out.println(Utils.toJsonString(responseJson));
+		        
+            }
+               
+            }
+	    
+	    
+	    private void handleLookupJob(JsonObject requestJson, PrintWriter out) throws IOException, SQLException{
+	    	
+	    	JsonObject data = requestJson.getAsJsonObject("data");
+	    	String token = requestJson.get("token").getAsString();
+	        int idrecruiter = JWTValidator.getIdClaim(token);
+	        int idjob = data.get("id").getAsInt();
+	        
+	        PreparedStatement st;
+	        st = ConnectionBD.conectaBD().prepareStatement("SELECT * FROM job_dataset WHERE recruiter_id = ? AND id_job = ?");
+	        st.setInt(1, idrecruiter);
+	        st.setInt(2, idjob);
+
+	        ResultSet rs;
+	        rs = st.executeQuery();
+
+	        if (rs.next()) {
+	        	
+	        	int experience = rs.getInt("experience");
+	        	data.addProperty("experience", experience);
+	        	int idskill = rs.getInt("skill");
+	        	st = ConnectionBD.conectaBD().prepareStatement("SELECT * FROM skill_dataset WHERE idskill_dataset = ?");
+		        st.setInt(1, idskill);
+		        rs = st.executeQuery();
+		        
+		        if(rs.next()) {
+		        	
+		        	String skill = rs.getString("skills_available");
+		        	data.addProperty("skill", skill);
+		        	JsonObject responseJson = Utils.createResponse("LOOKUP_JOB", "SUCCESS", "");
+		            responseJson.add("data",data);
+		            System.out.println("Server recebeu: " + requestJson);
+		            System.out.println("Server enviou: " + Utils.toJsonString(responseJson));
+		            out.println(Utils.toJsonString(responseJson));
+		            return;
+		            
+		        }
+		        
+		        else {
+		        	
+		        	JsonObject responseData = new JsonObject();
+			        JsonObject responseJson = Utils.createResponse("LOOKUP_JOB", "JOB_NOT_FOUND", "");
+			        responseJson.remove("data"); 
+			        responseJson.add("data", responseData);
+			        System.out.println("Server recebeu: " + requestJson);
+		            System.out.println("Server enviou: " + Utils.toJsonString(responseJson));
+			        out.println(Utils.toJsonString(responseJson));
+		        	
+		        }
+
+	        }
+	        
+	        else {
+	        	
+	        	JsonObject responseData = new JsonObject();
+		        JsonObject responseJson = Utils.createResponse("LOOKUP_JOB", "JOB_NOT_FOUND", "");
+		        responseJson.remove("data"); 
+		        responseJson.add("data", responseData);
+		        System.out.println("Server recebeu: " + requestJson);
+	            System.out.println("Server enviou: " + Utils.toJsonString(responseJson));
+		        out.println(Utils.toJsonString(responseJson));
+	        	
+	        }
+	   }
+	    
+	    private void handleLookupJobSet(JsonObject requestJson, PrintWriter out) throws IOException, SQLException {
+	        String token = requestJson.get("token").getAsString();
+	        int recruiter_id = JWTValidator.getIdClaim(token);
+
+	        // SQL para buscar as skills do job, fazendo join com a tabela skill_dataset permitindo mostrar o nome das skills invés do id
+	        String query = "SELECT j.id_job, j.experience, sd.skills_available " +
+	                       "FROM job_dataset j " +
+	                       "JOIN skill_dataset sd ON j.skill = sd.idskill_dataset " +
+	                       "WHERE j.recruiter_id = ?";
+
+	        PreparedStatement st = ConnectionBD.conectaBD().prepareStatement(query);
+	        st.setInt(1, recruiter_id);
+
+	        ResultSet rs = st.executeQuery();
+
+	        // Criação de uma ArrayList para armazenar as skills do job
+	        ArrayList<JsonObject> jobList = new ArrayList<>();
+
+	        while (rs.next()) {
+	            int jobId = rs.getInt("id_job");
+	            int experience = rs.getInt("experience");
+	            String skillName = rs.getString("skills_available");
+
+	            // Criação de um objeto Json para cada skill
+	            JsonObject jobJson = new JsonObject();
+	            jobJson.addProperty("id", jobId);
+	            jobJson.addProperty("skill", skillName);
+	            jobJson.addProperty("experience", experience);
+
+	            // Adição do objeto Json à ArrayList
+	            jobList.add(jobJson);
+	        }
+
+	        // Criação do objeto de resposta
+	        JsonObject responseJson = Utils.createResponse("LOOKUP_JOBSET", "SUCCESS", "");
+	        JsonObject responseData = new JsonObject();
+	        JsonArray jobsArray = new JsonArray();
+
+	        for (JsonObject jobJson : jobList) {
+	            jobsArray.add(jobJson);
+	        }
+
+	        // Adiciona o tamanho do array de jobs e o array de jobs ao objeto data
+	        responseData.addProperty("jobset_size", jobList.size());
+	        responseData.add("jobset", jobsArray);
+
+	        // Adiciona o objeto data ao objeto de resposta
+	        responseJson.add("data", responseData);
+
+	        System.out.println("Server recebeu: " + requestJson);
+	        System.out.println("Server enviou: " + Utils.toJsonString(responseJson));
+	        out.println(Utils.toJsonString(responseJson));
+	    }
+
+	    
+	    private void handleDeleteJob(JsonObject requestJson, PrintWriter out) throws IOException, SQLException {
+	        JsonObject data = requestJson.getAsJsonObject("data");
+	        String token = requestJson.get("token").getAsString();
+	        int idrecruiter = JWTValidator.getIdClaim(token);
+	        int idjob = data.get("id").getAsInt(); 
+	        
+	        PreparedStatement st;
+	        st = ConnectionBD.conectaBD().prepareStatement("DELETE FROM job_dataset WHERE id_job = ? AND recruiter_id = ?");
+	        st.setInt(1, idjob);
+	        st.setInt(2, idrecruiter);
+	        st.executeUpdate();
+	        JsonObject responseData = new JsonObject();
+	        JsonObject responseJson = Utils.createResponse("DELETE_JOB", "SUCCESS", "");
+	        responseJson.remove("data");
+            responseJson.add("data",responseData);
+	        System.out.println("Server recebeu: " + requestJson);
+            System.out.println("Server enviou: " + Utils.toJsonString(responseJson));
+	        out.println(Utils.toJsonString(responseJson));
+	        return;
 	    }
 	 
+	    private void handleUpdateJob(JsonObject requestJson, PrintWriter out) throws IOException, SQLException {
+	        JsonObject data = requestJson.getAsJsonObject("data");
+	        
+	        /*if ((data.get("email").getAsString() == null || data.get("email").getAsString().isEmpty() ) || (data.get("password").getAsString() == null || data.get("password").getAsString().isEmpty()) || (data.get("name").getAsString() == null || data.get("name").getAsString().isEmpty())) {
+	            JsonObject responseJson = Utils.createResponse("UPDATE_JOB", "INVALID_FIELD", "");
+	            System.out.println("Server recebeu: " + requestJson);
+	            System.out.println("Server enviou: " + Utils.toJsonString(responseJson));
+	            out.println(Utils.toJsonString(responseJson));
+	            return;
+	        }*/
+	        
+	        String token = requestJson.get("token").getAsString();
+	        int idrecruiter = JWTValidator.getIdClaim(token);
+	        String skill = data.get("skill").getAsString();
+	        int experience = data.get("experience").getAsInt();
+	        int idjob = data.get("id").getAsInt();
+
+	        PreparedStatement st;
+	        
+	        st = ConnectionBD.conectaBD().prepareStatement("SELECT * FROM skill_dataset WHERE skills_available = ?"); // Olha se existe no BD a skill atual
+	        st.setString(1, skill);
+	        
+	        ResultSet rs;
+	        rs = st.executeQuery();
+
+	        if (rs.next()) {
+	        	
+	        	int idnewSkill = rs.getInt("idskill_dataset");
+	        	st = ConnectionBD.conectaBD().prepareStatement("SELECT * FROM job_dataset WHERE id_job = ? AND recruiter_id = ? ");
+		        st.setInt(1, idjob);
+		        st.setInt(2, idrecruiter);
+
+		        rs = st.executeQuery();
+
+		        if (rs.next()) {
+		        	st = ConnectionBD.conectaBD().prepareStatement("UPDATE job_dataset SET skill = ?, experience = ? WHERE id_job = ? and recruiter_id = ? ");
+	                st.setInt(1, idnewSkill);
+	                st.setInt(2, experience);
+	                st.setInt(3, idjob);
+	                st.setInt(4, idrecruiter);
+	                st.executeUpdate();
+	        		JsonObject responseData = new JsonObject();
+			        JsonObject responseJson = Utils.createResponse("UPDATE_SKILL", "SUCCESS", "");
+	        		responseJson.remove("data");
+		            responseJson.add("data",responseData);
+		            System.out.println("Server recebeu: " + requestJson);
+		            System.out.println("Server enviou: " + Utils.toJsonString(responseJson));
+		            out.println(Utils.toJsonString(responseJson));
+		        }
+	        	
+	        }
+	        
+	        
+
+	    }
+	    
 	    public static void main(String[] args) {
 	        int serverPort = 21234;
 

@@ -9,7 +9,7 @@ import com.google.gson.JsonObject;
 
 public class LoginClient {
 	
-	public static String /*void*/ handleLogin(BufferedReader reader, PrintWriter out, BufferedReader in) throws IOException {
+	public static String handleLogin(BufferedReader reader, PrintWriter out, BufferedReader in) throws IOException {
     	
         System.out.println("Digite o endereço de email:");
         String email = reader.readLine();
@@ -24,10 +24,9 @@ public class LoginClient {
         requestJson.add("data", data);
 
         String jsonResponse = Utils.sendRequest(requestJson, out, in);
-        System.out.println(jsonResponse);
-        //String token = Utils.parseJson(jsonResponse).get("data").getAsJsonObject().get("token").getAsString();
+        System.out.println("Server recebeu: " + requestJson);
+        System.out.println("Server retornou: " + jsonResponse);
         JsonObject response = Utils.parseJson(jsonResponse);
-        
         String status = response.get("status").getAsString();
 
         switch (status) {
@@ -44,14 +43,6 @@ public class LoginClient {
         }
         return null;
     }
-        
-        /*if (response.get("status").getAsString().equals("SUCCESS")) {
-            return response.getAsJsonObject("data").get("token").getAsString();
-        } else {
-            return null;
-        }*/
+
     }
-        
-    //}
-//}
 

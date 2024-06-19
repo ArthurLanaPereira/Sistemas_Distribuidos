@@ -41,6 +41,7 @@ public class UpdateCompany {
         requestJson.add("data", data);
 
         String jsonResponse = Utils.sendRequest(requestJson, out, in);
-        System.out.println(jsonResponse);
+        System.out.println("Server recebeu: " + requestJson);
+        System.out.println("Server retornou: " + jsonResponse);
     }
 }

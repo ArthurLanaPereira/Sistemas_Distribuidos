@@ -1,6 +1,7 @@
 package entrega2;
 
 import java.io.BufferedReader;
+
 import java.io.IOException;
 import java.io.PrintWriter;
 
@@ -26,6 +27,7 @@ public class SignupClient {
         requestJson.add("data", data);
 
         String jsonResponse = Utils.sendRequest(requestJson, out, in);
-        System.out.println(jsonResponse);
+        System.out.println("Server recebeu: " + requestJson);
+        System.out.println("Server retornou: " + jsonResponse);
     }
 }

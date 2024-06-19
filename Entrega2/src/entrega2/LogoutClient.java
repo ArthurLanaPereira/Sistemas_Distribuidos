@@ -18,8 +18,8 @@ public class LogoutClient {
         Utils.sendRequest(requestJson, out);
 
         String jsonResponse = in.readLine();
-        System.out.println(jsonResponse);
-        
+        System.out.println("Server recebeu: " + requestJson);
+        System.out.println("Server retornou: " + jsonResponse);
         return "";
     }
 }

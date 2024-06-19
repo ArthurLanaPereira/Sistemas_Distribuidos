@@ -53,6 +53,12 @@ public class Client {
             System.out.println("4. Exclusão de conta");
             System.out.println("5. Sair");
             System.out.println("6. Ver dados");
+            System.out.println("7. Inserir Habilidade");
+            System.out.println("8. Olhar Habilidade");
+            System.out.println("9. Olhar todas Habilidade");
+            System.out.println("10. Deletar Habilidade");
+            System.out.println("11. Atualizar Habilidade");
+            System.out.println("12. Buscar Emprego");
 
             int option = getUserOption();
 
@@ -75,6 +81,24 @@ public class Client {
                 case 6:
                     LookUpClient.handleLookUp(in, out, token);
                     break;
+                case 7:
+                    IncludeSkill.handleIncludeSkill(reader, out, in, token);
+                    break;
+                case 8:
+                    LookUpSkill.handleLookUpSkill(reader, in, out, token);
+                    break;
+                case 9:
+                	LookUpSkillSet.handleLookUpSkillSet(in, out, token);
+                    break;
+                case 10:
+                    DeleteSkill.handleDeleteSkill(reader, out, in, token);
+                    break;
+                case 11:
+                    UpdateSkill.handleUpdateSkill(reader, out, in, token);
+                    break;
+                case 12:
+                    SearchJob.handleSearchJob(reader, out, in, token);
+                    break;
                 default:
                     System.out.println("Opção inválida. Por favor, digite novamente.");
             }
@@ -91,6 +115,11 @@ public class Client {
             System.out.println("4. Exclusão de conta");
             System.out.println("5. Sair");
             System.out.println("6. Ver dados");
+            System.out.println("7. Inserir Emprego");
+            System.out.println("8. Olhar Emprego");
+            System.out.println("9. Olhar todos os Empregos");
+            System.out.println("10. Deletar Emprego");
+            System.out.println("11. Atualizar Emprego");
 
             int option = getUserOption();
 
@@ -112,6 +141,21 @@ public class Client {
                     break;
                 case 6:
                     LookUpCompany.handleLookUpCompany(in, out, token);
+                    break;
+                case 7:
+                    IncludeJob.handleIncludeJob(reader, out, in, token);
+                    break;
+                case 8:
+                    LookUpJob.handleLookUpJob(reader, in, out, token);
+                    break;
+                case 9:
+                	LookUpJobSet.handleLookUpJobSet(in, out, token);
+                    break;
+                case 10:
+                    DeleteJob.handleDeleteJob(reader, out, in, token);
+                    break;
+                case 11:
+                    UpdateJob.handleUpdateJob(reader, out, in, token);
                     break;
                 default:
                     System.out.println("Opção inválida. Por favor, digite novamente.");

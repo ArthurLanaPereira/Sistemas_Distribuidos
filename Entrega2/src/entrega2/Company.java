@@ -6,17 +6,20 @@ package entrega2;
     private String name;
     private String industry;
 	private String description;
+	private String job;
     
-	public Company(String name, String email, String password, String industry, String description) {
+	
+	public Company(String name, String email, String password, String industry, String description, String job) {
 		this.name = name;
 		this.password = password;
         this.email = email;
         this.industry = industry;
         this.description = description;
+        this.job = job;
        
     }
-    
-    public String getEmail() {
+
+	public String getEmail() {
         return email;
     }
 
@@ -54,6 +57,14 @@ package entrega2;
 
 	public void setDescription(String description) {
 		this.description = description;
+	}
+	
+	public String getJob() {
+		return job;
+	}
+
+	public void setJob(String job) {
+		this.job = job;
 	}
     
 }

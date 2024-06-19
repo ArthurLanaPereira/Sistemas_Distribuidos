@@ -4,15 +4,18 @@ public class User {
     private String email;
     private String password;
     private String name;
+    private String skill;
+    private int experience;
 
-	public User(String name, String email, String password) {
+	public User(String name, String email, String password, String skill, int experience) {
 		this.name = name;
         this.email = email;
         this.password = password;
+        this.skill = skill;
+        this.experience = experience;
     }
-    
 
-    public String getEmail() {
+	public String getEmail() {
         return email;
     }
 
@@ -35,4 +38,20 @@ public class User {
     public void setName(String name) {
         this.name = name;
     }
+    
+    public String getSkill() {
+		return skill;
+	}
+
+	public void setSkill(String skill) {
+		this.skill = skill;
+	}
+	
+	public int getExperience() {
+		return experience;
+	}
+
+	public void setExperience(int experience) {
+		this.experience = experience;
+	}
 }
