@@ -16,6 +16,7 @@ public class LookUpJob {
     	
     	System.out.println("Digite o id do Trabalho:");
         String idjob = reader.readLine();
+       
     	
         JsonObject requestJson = Utils.createRequest("LOOKUP_JOB");
         requestJson.addProperty("token", token);

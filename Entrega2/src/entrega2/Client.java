@@ -58,13 +58,20 @@ public class Client {
             System.out.println("9. Olhar todas Habilidade");
             System.out.println("10. Deletar Habilidade");
             System.out.println("11. Atualizar Habilidade");
-            System.out.println("12. Buscar Emprego");
+            System.out.println("12. Buscar Emprego por Filtro");
+            System.out.println("13. Buscar Emprego por Experiência");
+            System.out.println("14. Buscar Emprego por Habilidade");
 
             int option = getUserOption();
 
             switch (option) {
                 case 1:
                     token = LoginClient.handleLogin(reader, out, in);
+                    if(token != null) {
+                     
+                    	GetCompany.handleGetCompany(reader, out, in, token);
+                    	
+                    }
                     break;
                 case 2:
                     SignupClient.handleSignup(reader, out, in);
@@ -99,6 +106,12 @@ public class Client {
                 case 12:
                     SearchJob.handleSearchJob(reader, out, in, token);
                     break;
+                case 13:
+                    SearchJobbyExperience.handleSearchJobbyExperience(reader, out, in, token);
+                    break;
+                case 14:
+                    SearchJobbySkill.handleSearchJobbySkill(reader, out, in, token);
+                    break;
                 default:
                     System.out.println("Opção inválida. Por favor, digite novamente.");
             }
@@ -120,6 +133,12 @@ public class Client {
             System.out.println("9. Olhar todos os Empregos");
             System.out.println("10. Deletar Emprego");
             System.out.println("11. Atualizar Emprego");
+            System.out.println("12. Disponibilizar Emprego");
+            System.out.println("13. Deixar Emprego Procurável");
+            System.out.println("14. Buscar Candidato por Filtro");
+            System.out.println("15. Buscar Candidato por Experiência");
+            System.out.println("16. Buscar Candidato por Habilidade");
+            System.out.println("17. Escolher Candidato");
 
             int option = getUserOption();
 
@@ -156,6 +175,24 @@ public class Client {
                     break;
                 case 11:
                     UpdateJob.handleUpdateJob(reader, out, in, token);
+                    break;
+                case 12:
+                    AvailableJob.handleAvailableJob(reader, out, in, token);
+                    break;
+                case 13:
+                    SearchableJob.handleSearchableJob(reader, out, in, token);
+                    break;
+                case 14:
+                    SearchCandidate.handleSearchCandidate(reader, out, in, token);
+                    break;
+                case 15:
+                    SearchCandidatebyExperience.handleSearchCandidatebyExperience(reader, out, in, token);
+                    break;
+                case 16:
+                    SearchCandidatebySkill.handleSearchCandidatebySkill(reader, out, in, token);
+                    break;
+                case 17:
+                    ChooseCandidate.handleChooseCandidate(reader, out, in, token);
                     break;
                 default:
                     System.out.println("Opção inválida. Por favor, digite novamente.");

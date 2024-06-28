@@ -14,11 +14,19 @@ public class IncludeJob {
 
         System.out.println("Digite quanto tempo de experiência é preciso:");
         String experience = reader.readLine();
+        
+        System.out.println("Digite se está Disponível (YES/NO):");
+        String available = reader.readLine();
+        
+        System.out.println("Digite se é Buscável (YES/NO):");
+        String searchable = reader.readLine();
 
         JsonObject requestJson = Utils.createRequest("INCLUDE_JOB");
         JsonObject data = new JsonObject();
         data.addProperty("skill", skill);
         data.addProperty("experience", experience);
+        data.addProperty("available", available);
+        data.addProperty("searchable", searchable);
         requestJson.addProperty("token", token);
         requestJson.add("data", data);
 
